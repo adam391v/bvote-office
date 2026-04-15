@@ -320,7 +320,7 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   @apply flex flex-col items-center justify-center p-12 text-center;
   color: var(--text-muted);
 }
-.empty-state svg { @apply mb-4 opacity-50; }
+.empty-state svg { @apply my-2 opacity-50; }
 
 /* ==================== SIDEBAR ==================== */
 .sidebar {
