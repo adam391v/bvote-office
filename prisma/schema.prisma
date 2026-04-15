@@ -1,0 +1,355 @@
+// GoalF - Hệ thống Quản lý Hiệu suất Liên tục
+// Prisma Schema cho MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== MODELS ====================
+
+/// Phòng ban / Đội nhóm
+model Department {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  users     User[]
+  goals     Goal[]
+
+  @@map("departments")
+}
+
+/// Người dùng hệ thống (Admin, Manager, Employee)
+model User {
+  id           Int         @id @default(autoincrement())
+  email        String      @unique @db.VarChar(255)
+  name         String      @db.VarChar(255)
+  password     String      @db.VarChar(255)
+  role         UserRole    @default(EMPLOYEE)
+  departmentId Int?        @map("department_id")
+  avatar       String?     @db.VarChar(500)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Quan hệ
+  department       Department?  @relation(fields: [departmentId], references: [id])
+  goals            Goal[]       @relation("OwnerGoals")
+  followingGoals   Goal[]       @relation("GoalFollowers")
+  participantGoals Goal[]       @relation("GoalParticipants")
+  checkinsOwned    Checkin[]    @relation("OwnerCheckins")
+  checkinsManaged  Checkin[]    @relation("ManagerCheckins")
+  feedbacksSent    Feedback[]   @relation("FeedbackFrom")
+  feedbacksRecv    Feedback[]   @relation("FeedbackTo")
+  feedbackRequests FeedbackRequest[] @relation("FeedbackRequestFrom")
+  feedbackRecipients FeedbackRequestRecipient[]
+  stars            UserStars?
+  redemptions      Redemption[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+/// Mục tiêu (Goal)
+model Goal {
+  id            Int        @id @default(autoincrement())
+  title         String     @db.VarChar(500)
+  description   String?    @db.Text
+  metric        String     @db.VarChar(255)
+  targetValue   Float      @map("target_value")
+  currentValue  Float      @default(0) @map("current_value")
+  unit          String     @db.VarChar(100)
+  period        GoalPeriod
+  cycleValue    String?    @db.VarChar(100)  // Ví dụ: "Q3/2021"
+  startDate     DateTime   @map("start_date")
+  endDate       DateTime   @map("end_date")
+  isTransparent Boolean    @default(true) @map("is_transparent")
+  minTargetValue Float?    @map("min_target_value")
+  tags          String?    @db.Text // Lưu danh sách tags dip cách nhau dấu comma
+  planUrl       String?    @db.VarChar(1000) @map("plan_url") // Link kế hoạch
+  departmentId  Int?       @map("department_id")
+  status        GoalStatus @default(IN_PROGRESS)
+  ownerId       Int        @map("owner_id")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Quan hệ
+  owner        User        @relation("OwnerGoals", fields: [ownerId], references: [id], onDelete: Cascade)
+  department   Department? @relation(fields: [departmentId], references: [id])
+  followers    User[]      @relation("GoalFollowers")
+  participants User[]      @relation("GoalParticipants")
+  childLinks   GoalLink[]  @relation("ParentGoal")
+  parentLinks  GoalLink[]  @relation("ChildGoal")
+  checkins     Checkin[]
+  milestones   Milestone[]
+
+  @@map("goals")
+}
+
+enum GoalPeriod {
+  YEAR
+  QUARTER
+  MONTH
+  WEEK
+}
+
+enum GoalStatus {
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  CANCELLED
+}
+
+/// Liên kết mục tiêu (Goal cha - con)
+model GoalLink {
+  id           Int  @id @default(autoincrement())
+  goalId       Int  @map("goal_id")
+  parentGoalId Int  @map("parent_goal_id")
+
+  goal       Goal @relation("ChildGoal", fields: [goalId], references: [id], onDelete: Cascade)
+  parentGoal Goal @relation("ParentGoal", fields: [parentGoalId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, parentGoalId])
+  @@map("goal_links")
+}
+
+/// Mốc thưởng (Milestone) cho mục tiêu
+model Milestone {
+  id         Int      @id @default(autoincrement())
+  goalId     Int      @map("goal_id")
+  title      String   @db.VarChar(255)
+  value      Float
+  starReward Int      @default(0) @map("star_reward")
+  isReached  Boolean  @default(false) @map("is_reached")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@map("milestones")
+}
+
+/// Check-in định kỳ
+model Checkin {
+  id          Int            @id @default(autoincrement())
+  goalId      Int            @map("goal_id")
+  ownerId     Int            @map("owner_id")
+  managerId   Int?           @map("manager_id")
+  date        DateTime       @default(now())
+  progressPct Int?           @map("progress_pct")
+  confidence  ConfidenceLevel?
+  speed       SpeedLevel?
+  effort      EffortLevel?
+  status      CheckinStatus  @default(PENDING)
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  // Quan hệ
+  goal      Goal            @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  owner     User            @relation("OwnerCheckins", fields: [ownerId], references: [id])
+  manager   User?           @relation("ManagerCheckins", fields: [managerId], references: [id])
+  detail    CheckinDetail?
+  feedbacks Feedback[]
+
+  @@map("checkins")
+}
+
+enum ConfidenceLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SpeedLevel {
+  SLOW
+  NORMAL
+  FAST
+}
+
+enum EffortLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum CheckinStatus {
+  PENDING
+  REVIEWED
+  COMPLETED
+}
+
+/// Chi tiết check-in (4 câu hỏi)
+model CheckinDetail {
+  id           Int    @id @default(autoincrement())
+  checkinId    Int    @unique @map("checkin_id")
+  progressNote String @map("progress_note") @db.Text
+  issue        String @db.Text
+  cause        String @db.Text
+  solution     String @db.Text
+
+  checkin Checkin @relation(fields: [checkinId], references: [id], onDelete: Cascade)
+
+  @@map("checkin_details")
+}
+
+/// Yêu cầu phản hồi (Feedback Request)
+model FeedbackRequest {
+  id           Int      @id @default(autoincrement())
+  fromUserId   Int      @map("from_user_id")
+  category     FeedbackCategory @default(GOAL)
+  subject      String   @db.VarChar(500)   // Tên mục tiêu / công việc / dự án
+  message      String   @db.Text           // Lời nhắn kèm theo
+  goalId       Int?     @map("goal_id")
+  checkinId    Int?     @map("checkin_id")
+  status       FeedbackRequestStatus @default(PENDING)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  fromUser     User     @relation("FeedbackRequestFrom", fields: [fromUserId], references: [id])
+  recipients   FeedbackRequestRecipient[]
+
+  @@map("feedback_requests")
+}
+
+/// Người nhận yêu cầu phản hồi (bảng trung gian M-N)
+model FeedbackRequestRecipient {
+  id          Int      @id @default(autoincrement())
+  requestId   Int      @map("request_id")
+  userId      Int      @map("user_id")
+  hasReplied  Boolean  @default(false) @map("has_replied")
+  repliedAt   DateTime? @map("replied_at")
+
+  request     FeedbackRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([requestId, userId])
+  @@map("feedback_request_recipients")
+}
+
+/// Phản hồi 360°
+model Feedback {
+  id              Int      @id @default(autoincrement())
+  fromUserId      Int      @map("from_user_id")
+  toUserId        Int      @map("to_user_id")
+  checkinId       Int?     @map("checkin_id")
+  requestId       Int?     @map("request_id")
+  performanceRate Int?     @map("performance_rate")  // Đánh giá hiệu suất (0-10 sao)
+  effortRate      Int?     @map("effort_rate")       // Đánh giá nỗ lực (0-10 sao)
+  criteria        String?  @db.VarChar(500)           // Tiêu chí phản hồi
+  criteriaStars   Int?     @map("criteria_stars")     // Sao cho tiêu chí
+  rating          Int?                                 // Rating tổng (backward compat)
+  comments        String   @db.Text                   // Lời nhắn
+  type            FeedbackType @default(GENERAL)
+  category        FeedbackCategory @default(GOAL)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  fromUser User     @relation("FeedbackFrom", fields: [fromUserId], references: [id])
+  toUser   User     @relation("FeedbackTo", fields: [toUserId], references: [id])
+  checkin  Checkin? @relation(fields: [checkinId], references: [id])
+
+  @@map("feedbacks")
+}
+
+enum FeedbackType {
+  POSITIVE
+  CONSTRUCTIVE
+  GENERAL
+}
+
+enum FeedbackCategory {
+  GOAL
+  CULTURE
+  PROJECT
+  WORK
+}
+
+enum FeedbackRequestStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
+
+/// Điểm sao người dùng
+model UserStars {
+  userId     Int @id @map("user_id")
+  totalStars Int @default(0) @map("total_stars")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stars")
+}
+
+/// Lịch sử nhận/tiêu sao
+model StarTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  amount      Int
+  reason      String   @db.VarChar(500)
+  referenceId Int?     @map("reference_id")
+  type        StarTransactionType
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("star_transactions")
+}
+
+enum StarTransactionType {
+  EARNED
+  SPENT
+}
+
+/// Phần thưởng
+model Reward {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  description String?      @db.Text
+  starCost    Int          @map("star_cost")
+  quantity    Int          @default(0)
+  imageUrl    String?      @map("image_url") @db.VarChar(500)
+  isActive    Boolean      @default(true) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  redemptions Redemption[]
+
+  @@map("rewards")
+}
+
+/// Lịch sử đổi thưởng
+model Redemption {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id")
+  rewardId  Int              @map("reward_id")
+  quantity  Int              @default(1)
+  status    RedemptionStatus @default(PENDING)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  reward Reward @relation(fields: [rewardId], references: [id])
+
+  @@map("redemptions")
+}
+
+enum RedemptionStatus {
+  PENDING
+  APPROVED
+  DELIVERED
+  REJECTED
+}
+
+/// Thông báo
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String   @db.VarChar(255)
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  link      String?  @db.VarChar(500)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
