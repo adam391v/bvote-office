@@ -53,7 +53,7 @@ export default async function CheckinsPage({ searchParams }: CheckinsPageProps) 
 
         {/* Context: tên mục tiêu */}
         {currentGoal && (
-          <div className="py-3 px-5 bg-indigo-500/[0.06] rounded-lg border border-indigo-500/15 mb-6">
+          <div className="py-3 px-5 bg-primary/[0.06] rounded-lg border border-primary/15 mb-6">
             <p className="text-sm font-semibold text-[var(--color-primary-light)]">
               🎯 {currentGoal.cycleValue || currentGoal.period} | {currentGoal.title}
             </p>

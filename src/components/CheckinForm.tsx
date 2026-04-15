@@ -134,8 +134,8 @@ export default function CheckinForm({ goals, selectedGoalId }: CheckinFormProps)
         />
 
         {/* 4 câu hỏi vàng */}
-        <div className="p-4 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
-          <p className="font-semibold text-sm mb-4 text-indigo-600 dark:text-indigo-400">
+        <div className="p-4 bg-primary/[0.06] rounded-xl border border-primary/15">
+          <p className="font-semibold text-sm mb-4 text-primary">
             📋 4 Câu hỏi Check-in
           </p>
 

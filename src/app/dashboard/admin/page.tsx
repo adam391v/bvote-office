@@ -19,7 +19,7 @@ export default async function AdminPage() {
   ]);
 
   const statCards = [
-    { label: "Người dùng", value: stats.totalUsers, icon: Users, color: "#6366f1", href: "/dashboard/admin/users" },
+    { label: "Người dùng", value: stats.totalUsers, icon: Users, color: "#05be75", href: "/dashboard/admin/users" },
     { label: "Phòng ban", value: stats.totalDepartments, icon: Building2, color: "#06b6d4", href: "/dashboard/admin/departments" },
     { label: "Mục tiêu", value: stats.totalGoals, icon: Target, color: "#10b981" },
     { label: "Check-in", value: stats.totalCheckins, icon: ClipboardCheck, color: "#3b82f6" },
@@ -93,7 +93,7 @@ export default async function AdminPage() {
             {[
               { label: "Quản trị viên", count: stats.roleCounts.ADMIN, color: "#ef4444" },
               { label: "Quản lý", count: stats.roleCounts.MANAGER, color: "#f59e0b" },
-              { label: "Nhân viên", count: stats.roleCounts.EMPLOYEE, color: "#6366f1" },
+              { label: "Nhân viên", count: stats.roleCounts.EMPLOYEE, color: "#05be75" },
             ].map((role) => (
               <div key={role.label}>
                 <div className="flex justify-between mb-1.5 text-[0.8125rem]">

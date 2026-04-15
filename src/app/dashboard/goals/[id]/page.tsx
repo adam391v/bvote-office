@@ -55,7 +55,7 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
               <TrendingUp size={18} className="text-[var(--color-primary)]" />
               Tiến độ
             </h2>
-            <div className="text-center p-6 bg-indigo-500/5 rounded-lg mb-4">
+            <div className="text-center p-6 bg-primary/5 rounded-lg mb-4">
               <p className="gradient-text text-[3.5rem] font-extrabold leading-none">
                 {progress}%
               </p>
@@ -184,7 +184,7 @@ export default async function GoalDetailPage({ params }: GoalDetailPageProps) {
                   <span className="text-[var(--text-muted)]">Thẻ</span>
                   <div className="flex gap-1 flex-wrap justify-end">
                     {goal.tags.split(",").filter(Boolean).map((t) => (
-                      <span key={t} className="badge bg-indigo-500/10 text-[var(--color-primary-light)] border border-indigo-500/20">#{t}</span>
+                      <span key={t} className="badge bg-primary/10 text-primary-light border border-primary/20">#{t}</span>
                     ))}
                   </div>
                 </div>

@@ -150,7 +150,7 @@ const selectStyles = {
     backgroundColor: state.isFocused ? "var(--bg-card-hover)" : "transparent",
     color: "var(--text-primary)",
   }),
-  multiValue: (base: any) => ({ ...base, backgroundColor: "rgba(99, 102, 241, 0.12)", borderRadius: 4 }),
+  multiValue: (base: any) => ({ ...base, backgroundColor: "rgba(5, 190, 117, 0.12)", borderRadius: 4 }),
   multiValueLabel: (base: any) => ({ ...base, color: "var(--color-primary-light)", fontSize: "0.8125rem", fontWeight: 500 }),
 };
 
@@ -169,7 +169,7 @@ function TabButton({
       onClick={onClick}
       className={`bg-transparent border-none cursor-pointer font-[inherit] py-2 px-4 rounded-lg text-[0.8125rem] transition-colors duration-150 ${
         active
-          ? "font-semibold text-[var(--color-primary)] bg-indigo-500/[0.08]"
+          ? "font-semibold text-[var(--color-primary)] bg-primary/[0.08]"
           : "font-normal text-[var(--text-muted)] hover:bg-[var(--bg-card-hover)]"
       }`}
     >
@@ -498,7 +498,7 @@ function FeedbackBubble({ fb, isSent }: { fb: FeedbackItem; isSent: boolean }) {
       <div
         className={`max-w-[70%] p-4 rounded-xl ${
           isSent
-            ? "bg-indigo-500/[0.08] border border-indigo-500/15"
+            ? "bg-primary/[0.08] border border-primary/15"
             : "bg-[var(--bg-card-hover)] border border-[var(--border-color)]"
         }`}
       >

@@ -83,7 +83,7 @@ function FilterDropdown({
                 }}
                 className={`block w-full py-2 px-3.5 border-none text-[0.8125rem] cursor-pointer text-left transition-colors duration-150 hover:bg-[var(--bg-card-hover)] ${
                   value === opt.value
-                    ? "bg-indigo-500/[0.08] text-[var(--color-primary)] font-semibold"
+                    ? "bg-primary/[0.08] text-[var(--color-primary)] font-semibold"
                     : "bg-transparent text-[var(--text-primary)] font-normal"
                 }`}
               >
@@ -303,7 +303,7 @@ export default function GoalsPageClient({ goals, currentUserName }: Props) {
               >
                 {/* Top */}
                 <div className="flex justify-between items-start mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-500/[0.12] flex items-center justify-center text-[var(--color-primary)]">
+                  <div className="w-10 h-10 rounded-lg bg-primary/[0.12] flex items-center justify-center text-[var(--color-primary)]">
                     <Target size={20} />
                   </div>
                   <span className={`badge ${statusBadge}`}>{statusLabel}</span>

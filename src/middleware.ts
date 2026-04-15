@@ -3,10 +3,18 @@ import { NextResponse } from "next/server";
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
+  const isHome = req.nextUrl.pathname === "/";
   const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
   const isOnAuth =
     req.nextUrl.pathname.startsWith("/login") ||
     req.nextUrl.pathname.startsWith("/register");
+
+  // Trang chủ: redirect theo trạng thái đăng nhập
+  if (isHome) {
+    return NextResponse.redirect(
+      new URL(isLoggedIn ? "/dashboard" : "/login", req.nextUrl)
+    );
+  }
 
   // Chuyển hướng nếu người dùng chưa đăng nhập
   if (isOnDashboard && !isLoggedIn) {
@@ -22,5 +30,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/", "/dashboard/:path*", "/login", "/register"],
 };

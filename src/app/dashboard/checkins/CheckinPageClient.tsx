@@ -120,7 +120,7 @@ function PlanUrlModal({
 
         <div className="p-6 flex flex-col gap-4">
           {/* Context */}
-          <div className="py-3 px-4 bg-indigo-500/[0.06] rounded-lg border border-indigo-500/15">
+          <div className="py-3 px-4 bg-primary/[0.06] rounded-lg border border-primary/15">
             <p className="text-[0.8125rem] text-[var(--text-secondary)]">
               <strong>{goal.cycleValue || goal.period}</strong> | {goal.title}
             </p>
@@ -341,7 +341,7 @@ function GoalCheckinTable({
                       <Link
                         href={`/dashboard/goals/${goal.id}`}
                         title="Chi tiết"
-                        className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-indigo-500/10 text-[var(--color-primary)] no-underline"
+                        className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-primary/10 text-[var(--color-primary)] no-underline"
                       >
                         <Settings size={16} />
                       </Link>
@@ -404,7 +404,7 @@ function FilterDropdown({
                 }}
                 className={`block w-full py-2 px-3.5 border-none text-[0.8125rem] cursor-pointer text-left transition-colors duration-150 hover:bg-[var(--bg-card-hover)] ${
                   value === opt.value
-                    ? "bg-indigo-500/[0.08] text-[var(--color-primary)] font-semibold"
+                    ? "bg-primary/[0.08] text-[var(--color-primary)] font-semibold"
                     : "bg-transparent text-[var(--text-primary)] font-normal"
                 }`}
               >

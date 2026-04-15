@@ -69,7 +69,7 @@ export default async function RewardsPage() {
                 <div
                   className={`w-full h-24 sm:h-28 rounded-lg flex items-center justify-center mb-4 ${
                     canAfford
-                      ? "bg-gradient-to-br from-indigo-500/12 to-cyan-500/12"
+                      ? "bg-gradient-to-br from-primary/[0.12] to-primary-light/[0.12]"
                       : "bg-gradient-to-br from-slate-500/12 to-slate-500/6"
                   }`}
                 >
