@@ -1,13 +1,18 @@
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isHome = req.nextUrl.pathname === "/";
-  const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
+export function middleware(req: NextRequest) {
+  // Kiểm tra session cookie (next-auth v5 sử dụng authjs)
+  const token =
+    req.cookies.get("authjs.session-token") ||
+    req.cookies.get("__Secure-authjs.session-token");
+  const isLoggedIn = !!token;
+
+  const { pathname } = req.nextUrl;
+  const isHome = pathname === "/";
+  const isOnDashboard = pathname.startsWith("/dashboard");
   const isOnAuth =
-    req.nextUrl.pathname.startsWith("/login") ||
-    req.nextUrl.pathname.startsWith("/register");
+    pathname.startsWith("/login") || pathname.startsWith("/register");
 
   // Trang chủ: redirect theo trạng thái đăng nhập
   if (isHome) {
@@ -27,7 +32,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/", "/dashboard/:path*", "/login", "/register"],
