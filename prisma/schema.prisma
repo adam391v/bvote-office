@@ -16,7 +16,11 @@ datasource db {
 model Department {
   id        Int      @id @default(autoincrement())
   name      String   @db.VarChar(255)
+  managerId Int?     @map("manager_id")
   createdAt DateTime @default(now()) @map("created_at")
+
+  // Quan hệ
+  manager   User?    @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
   users     User[]
   goals     Goal[]
 
@@ -36,8 +40,9 @@ model User {
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
   // Quan hệ
-  department       Department?  @relation(fields: [departmentId], references: [id])
-  goals            Goal[]       @relation("OwnerGoals")
+  department           Department?  @relation(fields: [departmentId], references: [id])
+  managedDepartments   Department[] @relation("DepartmentManager")
+  goals                Goal[]       @relation("OwnerGoals")
   followingGoals   Goal[]       @relation("GoalFollowers")
   participantGoals Goal[]       @relation("GoalParticipants")
   checkinsOwned    Checkin[]    @relation("OwnerCheckins")
@@ -106,6 +111,17 @@ enum GoalStatus {
   COMPLETED
   OVERDUE
   CANCELLED
+}
+
+/// Cấu hình loại mục tiêu (metric & unit)
+model GoalMetric {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255) @unique // Ví dụ: Doanh thu sản phẩm A
+  unit      String   @db.VarChar(100) // Ví dụ: Tỷ
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("goal_metrics")
 }
 
 /// Liên kết mục tiêu (Goal cha - con)

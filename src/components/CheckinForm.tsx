@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { createCheckinAction } from "@/actions/checkin-actions";
 import { Button, Input, Textarea, Select } from "@/components/ui";
 import type { SelectOption } from "@/components/ui";
@@ -47,8 +48,6 @@ interface CheckinFormProps {
 }
 
 export default function CheckinForm({ goals, selectedGoalId }: CheckinFormProps) {
-  const [success, setSuccess] = useState(false);
-
   const goalOptions: SelectOption[] = goals.map((g) => ({
     value: String(g.id),
     label: g.title,
@@ -69,8 +68,6 @@ export default function CheckinForm({ goals, selectedGoalId }: CheckinFormProps)
   });
 
   const onSubmit = async (data: CheckinFormData) => {
-    setSuccess(false);
-
     const formData = new FormData();
     formData.set("goalId", data.goalId);
     formData.set("progressPct", String(data.progressPct));
@@ -84,24 +81,15 @@ export default function CheckinForm({ goals, selectedGoalId }: CheckinFormProps)
 
     const result = await createCheckinAction(formData);
     if (result?.error) {
-      setError("root", { message: result.error });
+      toast.error(result.error);
     } else {
-      setSuccess(true);
+      toast.success("✅ Check-in thành công! Bạn nhận được +2 ⭐");
       reset();
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {errors.root?.message && (
-        <div className="alert alert-error">{errors.root.message}</div>
-      )}
-      {success && (
-        <div className="alert alert-success">
-          ✅ Check-in thành công! Bạn nhận được +2 ⭐
-        </div>
-      )}
-
       <div className="flex flex-col gap-4">
         {/* Goal */}
         <Controller

@@ -6,9 +6,9 @@ import {
   createRewardAction,
   updateRewardAction,
   deleteRewardAction,
-  toggleRewardAction,
 } from "@/actions/admin-actions";
-import { Button, Input, Textarea } from "@/components/ui";
+import { toast } from "react-hot-toast";
+import { Button, Input, Textarea, Modal } from "@/components/ui";
 import { Plus, Edit3, Trash2, Save, X, ToggleLeft, ToggleRight } from "lucide-react";
 
 interface RewardData {
@@ -28,7 +28,6 @@ interface Props {
 export default function AdminRewardActions({ mode, reward }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -47,7 +46,6 @@ export default function AdminRewardActions({ mode, reward }: Props) {
     quantity: number;
     isActive: boolean;
   }) => {
-    setMessage("");
     let result;
     if (mode === "create") {
       result = await createRewardAction({
@@ -68,8 +66,9 @@ export default function AdminRewardActions({ mode, reward }: Props) {
     }
 
     if (result?.error) {
-      setMessage(result.error);
+      toast.error(result.error);
     } else {
+      toast.success(mode === "create" ? "Tạo phần thưởng thành công!" : "Cập nhật phần thưởng thành công!");
       setShowForm(false);
       if (mode === "create") reset();
     }
@@ -81,15 +80,22 @@ export default function AdminRewardActions({ mode, reward }: Props) {
     setLoading(true);
     const result = await deleteRewardAction(reward.id);
     if (result?.error) {
-      setMessage(result.error);
-      setLoading(false);
+      toast.error(result.error);
+    } else {
+      toast.success("Xóa phần thưởng thành công!");
     }
+    setLoading(false);
   };
 
   const onToggle = async () => {
     if (!reward) return;
     setLoading(true);
-    await toggleRewardAction(reward.id);
+    const result = await toggleRewardAction(reward.id);
+    if (!result?.error) {
+       toast.success("Cập nhật trạng thái thành công!");
+    } else {
+       toast.error(result.error);
+    }
     setLoading(false);
   };
 
@@ -100,35 +106,26 @@ export default function AdminRewardActions({ mode, reward }: Props) {
           Tạo phần thưởng
         </Button>
 
-        {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
-            <div className="card-static w-[440px] max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold">Tạo phần thưởng mới</h3>
-                <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X size={18} /></Button>
+        <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Tạo phần thưởng mới">
+          <form onSubmit={handleSubmit(onSubmit)} className="p-6">
+            <div className="flex flex-col gap-4">
+              <Input id="rw-name" label="Tên phần thưởng *" placeholder="Ví dụ: Voucher cafe" {...register("name")} />
+              <Textarea id="rw-desc" label="Mô tả" placeholder="Mô tả chi tiết..." {...register("description")} />
+              <div className="grid grid-cols-2 gap-3">
+                <Input id="rw-cost" label="Giá (sao) *" type="number" min={1} {...register("starCost")} />
+                <Input id="rw-qty" label="Số lượng *" type="number" min={0} {...register("quantity")} />
               </div>
-              {message && <div className="alert alert-error">{message}</div>}
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="flex flex-col gap-4">
-                  <Input id="rw-name" label="Tên phần thưởng *" placeholder="Ví dụ: Voucher cafe" {...register("name")} />
-                  <Textarea id="rw-desc" label="Mô tả" placeholder="Mô tả chi tiết..." {...register("description")} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <Input id="rw-cost" label="Giá (sao) *" type="number" min={1} {...register("starCost")} />
-                    <Input id="rw-qty" label="Số lượng *" type="number" min={0} {...register("quantity")} />
-                  </div>
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="checkbox" {...register("isActive")} className="w-4 h-4 accent-[var(--color-primary)]" />
-                    Hoạt động (có thể đổi thưởng)
-                  </label>
-                  <div className="flex gap-2">
-                    <Button type="submit" variant="primary" icon={<Save size={16} />}>Tạo</Button>
-                    <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Hủy</Button>
-                  </div>
-                </div>
-              </form>
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" {...register("isActive")} className="w-4 h-4 accent-[var(--color-primary)]" />
+                Hoạt động (có thể đổi thưởng)
+              </label>
+              <div className="flex gap-2 mt-4">
+                <Button type="submit" variant="primary" icon={<Save size={16} />}>Tạo</Button>
+                <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Hủy</Button>
+              </div>
             </div>
-          </div>
-        )}
+          </form>
+        </Modal>
       </>
     );
   }
@@ -147,42 +144,33 @@ export default function AdminRewardActions({ mode, reward }: Props) {
       >
         {reward?.isActive ? "Bật" : "Tắt"}
       </Button>
-      <Button variant="ghost" size="sm" icon={<Edit3 size={14} />} onClick={() => { setMessage(""); setShowForm(true); }}>
+      <Button variant="ghost" size="sm" icon={<Edit3 size={14} />} onClick={() => setShowForm(true)}>
         Sửa
       </Button>
       <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} onClick={onDelete} className="text-[var(--color-danger)]">
         Xóa
       </Button>
 
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="card-static w-[440px] max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold">Sửa phần thưởng</h3>
-              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X size={18} /></Button>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Sửa phần thưởng">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6">
+          <div className="flex flex-col gap-4">
+            <Input id={`rw-${reward!.id}-name`} label="Tên phần thưởng" {...register("name")} />
+            <Textarea id={`rw-${reward!.id}-desc`} label="Mô tả" {...register("description")} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input id={`rw-${reward!.id}-cost`} label="Giá (sao)" type="number" {...register("starCost")} />
+              <Input id={`rw-${reward!.id}-qty`} label="Số lượng" type="number" {...register("quantity")} />
             </div>
-            {message && <div className="alert alert-error">{message}</div>}
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="flex flex-col gap-4">
-                <Input id={`rw-${reward!.id}-name`} label="Tên phần thưởng" {...register("name")} />
-                <Textarea id={`rw-${reward!.id}-desc`} label="Mô tả" {...register("description")} />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input id={`rw-${reward!.id}-cost`} label="Giá (sao)" type="number" {...register("starCost")} />
-                  <Input id={`rw-${reward!.id}-qty`} label="Số lượng" type="number" {...register("quantity")} />
-                </div>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" {...register("isActive")} className="w-4 h-4 accent-[var(--color-primary)]" />
-                  Hoạt động
-                </label>
-                <div className="flex gap-2">
-                  <Button type="submit" variant="primary" icon={<Save size={16} />}>Lưu</Button>
-                  <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Hủy</Button>
-                </div>
-              </div>
-            </form>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" {...register("isActive")} className="w-4 h-4 accent-[var(--color-primary)]" />
+              Hoạt động
+            </label>
+            <div className="flex gap-2 mt-4">
+              <Button type="submit" variant="primary" icon={<Save size={16} />}>Lưu</Button>
+              <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Hủy</Button>
+            </div>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

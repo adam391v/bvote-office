@@ -160,13 +160,24 @@ export async function getDepartments() {
   return prisma.department.findMany({
     orderBy: { name: "asc" },
     include: {
+      manager: { select: { id: true, name: true, email: true } },
       _count: { select: { users: true } },
     },
   });
 }
 
+/// Lấy danh sách user (id, name, email) để hiển thị trong dropdown chọn quản lý
+export async function getUsersForSelect() {
+  await requireAdmin();
+  return prisma.user.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, email: true, role: true },
+  });
+}
+
 interface DepartmentInput {
   name: string;
+  managerId: number | null;
 }
 
 export async function createDepartmentAction(input: DepartmentInput) {
@@ -177,7 +188,12 @@ export async function createDepartmentAction(input: DepartmentInput) {
   }
 
   try {
-    await prisma.department.create({ data: { name: input.name.trim() } });
+    await prisma.department.create({
+      data: {
+        name: input.name.trim(),
+        managerId: input.managerId,
+      },
+    });
     revalidatePath("/dashboard/admin/departments");
     return { success: true };
   } catch {
@@ -195,7 +211,10 @@ export async function updateDepartmentAction(id: number, input: DepartmentInput)
   try {
     await prisma.department.update({
       where: { id },
-      data: { name: input.name.trim() },
+      data: {
+        name: input.name.trim(),
+        managerId: input.managerId,
+      },
     });
     revalidatePath("/dashboard/admin/departments");
     return { success: true };
@@ -379,4 +398,58 @@ export async function rejectRedemptionAction(id: number) {
 
   revalidatePath("/dashboard/admin");
   return { success: true };
+}
+
+// ==================== GOAL METRICS ====================
+
+export async function getGoalMetrics() {
+  const session = await auth();
+  if (!session?.user) throw new Error("Chưa đăng nhập");
+  return prisma.goalMetric.findMany({ orderBy: { createdAt: "desc" } });
+}
+
+export async function createGoalMetricAction(data: { name: string; unit: string }) {
+  await requireAdmin();
+  if (!data.name || !data.unit) return { error: "Vui lòng điền đủ thông tin" };
+
+  try {
+    const existing = await prisma.goalMetric.findUnique({ where: { name: data.name } });
+    if (existing) return { error: "Loại mục tiêu đã tồn tại" };
+
+    await prisma.goalMetric.create({ data });
+    revalidatePath("/dashboard/admin/metrics");
+    revalidatePath("/dashboard/goals/create");
+    return { success: true };
+  } catch {
+    return { error: "Có lỗi xảy ra" };
+  }
+}
+
+export async function updateGoalMetricAction(id: number, data: { name: string; unit: string }) {
+  await requireAdmin();
+  if (!data.name || !data.unit) return { error: "Vui lòng điền đủ thông tin" };
+
+  try {
+    await prisma.goalMetric.update({
+      where: { id },
+      data,
+    });
+    revalidatePath("/dashboard/admin/metrics");
+    revalidatePath("/dashboard/goals/create");
+    return { success: true };
+  } catch {
+    return { error: "Có lỗi xảy ra hoặc loại mục tiêu đã tồn tại" };
+  }
+}
+
+export async function deleteGoalMetricAction(id: number) {
+  await requireAdmin();
+  try {
+    await prisma.goalMetric.delete({ where: { id } });
+    revalidatePath("/dashboard/admin/metrics");
+    revalidatePath("/dashboard/goals/create");
+    return { success: true };
+  } catch {
+    return { error: "Có lỗi xảy ra" };
+  }
 }

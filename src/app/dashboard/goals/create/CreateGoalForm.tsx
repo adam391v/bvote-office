@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
+import { toast } from "react-hot-toast";
 import { createGoalAction } from "@/actions/goal-actions";
 import { Button, Input, Select, DatePicker } from "@/components/ui";
 import type { SelectOption } from "@/components/ui";
@@ -76,10 +77,11 @@ interface Props {
   users: { id: number; name: string; email: string }[];
   departments: { id: number; name: string }[];
   goals: { id: number; title: string; ownerId: number }[];
+  metrics?: { id: number; name: string; unit: string }[];
   currentUserId: number;
 }
 
-export default function CreateGoalForm({ users, departments, goals, currentUserId }: Props) {
+export default function CreateGoalForm({ users, departments, goals, metrics = [], currentUserId }: Props) {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,7 @@ export default function CreateGoalForm({ users, departments, goals, currentUserI
   const otherGoals = goals.filter((g) => g.ownerId !== currentUserId).map(g => ({ value: g.id, label: g.title }));
   const deptOptions = departments.map(d => ({ value: d.id, label: d.name }));
   const userOptions = users.map(u => ({ value: u.id, label: u.name }));
+  const metricOptions: SelectOption[] = metrics.map((m) => ({ value: m.name, label: m.name }));
 
   const { register, handleSubmit, control, watch, setValue } = useForm({
     defaultValues: {
@@ -131,11 +134,13 @@ export default function CreateGoalForm({ users, departments, goals, currentUserI
 
     const res = await createGoalAction(payload);
     if (res?.error) {
-      setServerError(res.error);
-      setLoading(false);
+      toast.error(res.error);
+      setServerError(res.error); // Optional keep for input bounds if desired, better remove:
     } else {
+      toast.success("Tạo mục tiêu thành công!");
       router.push("/dashboard/goals");
     }
+    setLoading(false);
   };
 
   return (
@@ -144,8 +149,6 @@ export default function CreateGoalForm({ users, departments, goals, currentUserI
         <Layers size={18} className="text-[var(--color-primary)]" />
         <h2 className="font-semibold text-lg">Tạo mục tiêu</h2>
       </div>
-
-      {serverError && <div className="alert alert-error mx-4 mt-4">{serverError}</div>}
 
       <form onSubmit={handleSubmit(onSubmit)} className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -187,13 +190,37 @@ export default function CreateGoalForm({ users, departments, goals, currentUserI
 
             <div className="flex gap-4">
               <div className="flex-[2]">
-                <Input id="metric" label="Loại mục tiêu (Chỉ số) *" placeholder="Doanh thu sản phẩm A" {...register("metric", { required: true })} />
+                <Controller
+                  name="metric"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Select
+                      id="metric"
+                      label="Loại mục tiêu *"
+                      placeholder="Tìm và chọn loại mục tiêu..."
+                      options={metricOptions}
+                      value={metricOptions.find(o => o.value === field.value) || null}
+                      onChange={(opt) => {
+                        const val = opt ? opt.value : "";
+                        field.onChange(val);
+                        const found = metrics.find(m => m.name === val);
+                        if (found) {
+                          setValue("unit", found.unit);
+                        } else {
+                          setValue("unit", "");
+                        }
+                      }}
+                      isSearchable={true}
+                    />
+                  )}
+                />
               </div>
               <div className="flex-1">
-                <Input id="targetValue" type="number" label="Chỉ tiêu *" placeholder="5" {...register("targetValue", { required: true })} />
+                <Input id="targetValue" type="number" step="any" label="Chỉ tiêu *" placeholder="5" {...register("targetValue", { required: true })} />
               </div>
               <div className="flex-1">
-                <Input id="unit" label="Đơn vị" placeholder="Tỷ" {...register("unit")} />
+                <Input id="unit" label="Đơn vị *" placeholder="Tỷ" {...register("unit", { required: true })} readOnly className="bg-[var(--bg-card)] cursor-not-allowed text-[var(--text-muted)] font-medium" onClick={(e: any) => e.preventDefault()} />
               </div>
             </div>
 

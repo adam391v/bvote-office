@@ -34,6 +34,7 @@ const adminSubItems = [
   { href: "/dashboard/admin", label: "Tổng quan", icon: BarChart3 },
   { href: "/dashboard/admin/users", label: "Người dùng", icon: Users },
   { href: "/dashboard/admin/departments", label: "Phòng ban", icon: Building2 },
+  { href: "/dashboard/admin/metrics", label: "Loại mục tiêu", icon: Target },
   { href: "/dashboard/admin/rewards", label: "Phần thưởng", icon: Gift },
 ];
 
@@ -168,7 +169,6 @@ export default function Sidebar({
         )}
       </nav>
 
-      {/* Star count */}
       <div className="mx-3 mb-3 p-3.5 rounded-lg flex items-center gap-3 bg-gradient-to-br from-amber-500/[0.08] to-amber-500/[0.02] border border-amber-500/15">
         <div className="animate-float">
           <Star size={24} fill="#f59e0b" color="#f59e0b" />
@@ -179,26 +179,6 @@ export default function Sidebar({
           </p>
           <p className="text-[0.6875rem] text-[var(--text-muted)]">sao tích lũy</p>
         </div>
-      </div>
-
-      {/* User info */}
-      <div className="px-6 py-4 border-t border-[var(--border-color)] flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="gradient-bg w-[34px] h-[34px] rounded-full flex items-center justify-center text-[0.8125rem] font-semibold text-white">
-            {userName?.charAt(0)?.toUpperCase()}
-          </div>
-          <div>
-            <p className="text-[0.8125rem] font-semibold leading-tight">{userName}</p>
-            <p className="text-[0.6875rem] text-[var(--text-muted)]">{roleLabel}</p>
-          </div>
-        </div>
-        <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
-          className="btn btn-ghost btn-icon text-[var(--text-muted)]"
-          title="Đăng xuất"
-        >
-          <LogOut size={18} />
-        </button>
       </div>
     </aside>
   );

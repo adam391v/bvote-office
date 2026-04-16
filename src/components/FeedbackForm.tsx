@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { sendFeedbackAction } from "@/actions/feedback-actions";
 import { Button, Textarea, Select } from "@/components/ui";
 import type { SelectOption } from "@/components/ui";
@@ -29,7 +30,6 @@ interface FeedbackFormProps {
 }
 
 export default function FeedbackForm({ users }: FeedbackFormProps) {
-  const [success, setSuccess] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
 
   const userOptions: SelectOption[] = users.map((u) => ({
@@ -57,8 +57,6 @@ export default function FeedbackForm({ users }: FeedbackFormProps) {
   const currentRating = watch("rating");
 
   const onSubmit = async (data: FeedbackFormData) => {
-    setSuccess(false);
-
     const formData = new FormData();
     formData.set("toUserId", data.toUserId);
     formData.set("type", data.type);
@@ -73,24 +71,15 @@ export default function FeedbackForm({ users }: FeedbackFormProps) {
       category: data.type as any,
     });
     if (result?.error) {
-      setError("root", { message: result.error });
+      toast.error(result.error);
     } else {
-      setSuccess(true);
+      toast.success("✅ Phản hồi đã gửi! Bạn nhận được +1 ⭐");
       reset();
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {errors.root?.message && (
-        <div className="alert alert-error">{errors.root.message}</div>
-      )}
-      {success && (
-        <div className="alert alert-success">
-          ✅ Phản hồi đã gửi! Bạn nhận được +1 ⭐
-        </div>
-      )}
-
       <div className="flex flex-col gap-4">
         {/* To User */}
         <Select

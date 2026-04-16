@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { registerAction } from "@/actions/auth-actions";
 import { Button, Input } from "@/components/ui";
 import { UserPlus, Mail, Lock, User, Target } from "lucide-react";
@@ -27,7 +28,6 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -38,15 +38,15 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterForm) => {
-    setServerError("");
     const result = await registerAction({
       name: data.name,
       email: data.email,
       password: data.password,
     });
     if (result?.error) {
-      setServerError(result.error);
+      toast.error(result.error);
     } else {
+      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
       router.push("/login");
     }
   };
@@ -70,8 +70,6 @@ export default function RegisterPage() {
             Tạo tài khoản để bắt đầu
           </p>
         </div>
-
-        {serverError && <div className="alert alert-error">{serverError}</div>}
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4">

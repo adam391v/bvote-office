@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "react-hot-toast";
 import { loginAction } from "@/actions/auth-actions";
 import { Button, Input } from "@/components/ui";
 import { LogIn, Mail, Lock, Target } from "lucide-react";
@@ -20,7 +21,6 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -31,11 +31,11 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginForm) => {
-    setServerError("");
     const result = await loginAction(data);
     if (result?.error) {
-      setServerError(result.error);
+      toast.error(result.error);
     } else {
+      toast.success("Đăng nhập thành công!");
       router.push("/dashboard");
     }
   };
@@ -60,9 +60,6 @@ export default function LoginPage() {
             Quản lý hiệu suất liên tục
           </p>
         </div>
-
-        {/* Server Error */}
-        {serverError && <div className="alert alert-error">{serverError}</div>}
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col gap-4">

@@ -21,6 +21,7 @@ export default async function CreateGoalPage() {
         users={formData.users}
         departments={formData.departments}
         goals={formData.goals}
+        metrics={formData.metrics}
         currentUserId={Number(session.user.id)}
       />
     </div>

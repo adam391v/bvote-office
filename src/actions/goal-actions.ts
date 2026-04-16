@@ -183,14 +183,14 @@ export async function getGoalFormData() {
   const session = await auth();
   if (!session?.user) return null;
 
-  const [users, departments, goals] = await Promise.all([
+  const [users, departments, goals, metrics] = await Promise.all([
     prisma.user.findMany({ select: { id: true, name: true, email: true } }),
     prisma.department.findMany({ select: { id: true, name: true } }),
     prisma.goal.findMany({ 
       select: { id: true, title: true, ownerId: true },
-      // Lấy tất cả hoặc chỉ của người dùng (tùy vào "Liên kết mục tiêu của tôi / Khác")
     }),
+    prisma.goalMetric.findMany({ select: { id: true, name: true, unit: true }, orderBy: { name: "asc" } }),
   ]);
 
-  return { users, departments, goals };
+  return { users, departments, goals, metrics };
 }

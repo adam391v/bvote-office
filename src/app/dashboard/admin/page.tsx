@@ -21,7 +21,7 @@ export default async function AdminPage() {
   const statCards = [
     { label: "Người dùng", value: stats.totalUsers, icon: Users, color: "#05be75", href: "/dashboard/admin/users" },
     { label: "Phòng ban", value: stats.totalDepartments, icon: Building2, color: "#06b6d4", href: "/dashboard/admin/departments" },
-    { label: "Mục tiêu", value: stats.totalGoals, icon: Target, color: "#10b981" },
+    { label: "Mục tiêu", value: stats.totalGoals, icon: Target, color: "#10b981", href: "/dashboard/admin/metrics" },
     { label: "Check-in", value: stats.totalCheckins, icon: ClipboardCheck, color: "#3b82f6" },
     { label: "Phản hồi", value: stats.totalFeedbacks, icon: MessageCircle, color: "#f59e0b" },
     { label: "Phần thưởng", value: stats.totalRewards, icon: Gift, color: "#ef4444", href: "/dashboard/admin/rewards" },
