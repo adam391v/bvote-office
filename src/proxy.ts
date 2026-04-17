@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   // Kiểm tra session cookie (next-auth v5 sử dụng authjs)
   const token =
     req.cookies.get("authjs.session-token") ||
