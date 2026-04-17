@@ -6,6 +6,7 @@ import {
   createRewardAction,
   updateRewardAction,
   deleteRewardAction,
+  toggleRewardAction,
 } from "@/actions/admin-actions";
 import { toast } from "react-hot-toast";
 import { Button, Input, Textarea, Modal } from "@/components/ui";

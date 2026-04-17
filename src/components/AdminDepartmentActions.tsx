@@ -46,7 +46,6 @@ export default function AdminDepartmentActions({ mode, department, memberCount =
   });
 
   const onSubmit = async (data: FormData) => {
-    setMessage("");
     setSubmitting(true);
     const payload = {
       name: data.name,
