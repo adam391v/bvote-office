@@ -19,15 +19,15 @@ export async function changePasswordAction(currentPassword: string, newPassword:
       return { error: "Không tìm thấy người dùng" };
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return { error: "Mật khẩu hiện tại không đúng" };
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: userId },
-      data: { passwordHash },
+      data: { password: hashedPassword },
     });
 
     return { success: true };
